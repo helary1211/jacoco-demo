@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExpressionParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Maven plug-in example</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.examples.parser</a> &gt; <span class="el_source">ExpressionParser.java</span></div><h1>ExpressionParser.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2020 Mountainminds GmbH &amp; Co. KG and Contributors
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.examples.parser;
+
+import static java.io.StreamTokenizer.TT_EOF;
+import static java.io.StreamTokenizer.TT_NUMBER;
+
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+
+import org.jacoco.examples.expressions.Add;
+import org.jacoco.examples.expressions.Const;
+import org.jacoco.examples.expressions.Div;
+import org.jacoco.examples.expressions.IExpression;
+import org.jacoco.examples.expressions.Mul;
+import org.jacoco.examples.expressions.Sub;
+
+public class ExpressionParser {
+
+	private final StreamTokenizer tokenizer;
+
+<span class="fc" id="L33">	public ExpressionParser(final String s) throws IOException {</span>
+<span class="fc" id="L34">		tokenizer = new StreamTokenizer(new StringReader(s));</span>
+<span class="fc" id="L35">		tokenizer.ordinaryChar('(');</span>
+<span class="fc" id="L36">		tokenizer.ordinaryChar(')');</span>
+<span class="fc" id="L37">		tokenizer.ordinaryChar('+');</span>
+<span class="fc" id="L38">		tokenizer.ordinaryChar('-');</span>
+<span class="fc" id="L39">		tokenizer.ordinaryChar('*');</span>
+<span class="fc" id="L40">		tokenizer.ordinaryChar('/');</span>
+<span class="fc" id="L41">	}</span>
+
+	public IExpression parse() throws IOException {
+<span class="fc" id="L44">		tokenizer.nextToken();</span>
+<span class="fc" id="L45">		final IExpression e = term();</span>
+<span class="fc" id="L46">		expect(TT_EOF);</span>
+<span class="fc" id="L47">		return e;</span>
+	}
+
+	private IExpression term() throws IOException {
+<span class="fc" id="L51">		IExpression e = product();</span>
+		while (true) {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">			if (accept('+')) {</span>
+<span class="fc" id="L54">				e = new Add(e, product());</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">			} else if (accept('-')) {</span>
+<span class="nc" id="L56">				e = new Sub(e, product());</span>
+			} else {
+<span class="fc" id="L58">				return e;</span>
+			}
+		}
+	}
+
+	private IExpression product() throws IOException {
+<span class="fc" id="L64">		IExpression e = factor();</span>
+		while (true) {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">			if (accept('*')) {</span>
+<span class="fc" id="L67">				e = new Mul(e, factor());</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">			} else if (accept('/')) {</span>
+<span class="nc" id="L69">				e = new Div(e, factor());</span>
+			} else {
+<span class="fc" id="L71">				return e;</span>
+			}
+		}
+	}
+
+	private IExpression factor() throws IOException {
+		final IExpression e;
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (accept('(')) {</span>
+<span class="fc" id="L79">			e = term();</span>
+<span class="fc" id="L80">			expect(')');</span>
+		} else {
+<span class="fc" id="L82">			expect(TT_NUMBER);</span>
+<span class="fc" id="L83">			e = new Const(tokenizer.nval);</span>
+		}
+<span class="fc" id="L85">		return e;</span>
+	}
+
+	private boolean accept(final int type) throws IOException {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">		if (tokenizer.ttype == type) {</span>
+<span class="fc" id="L90">			tokenizer.nextToken();</span>
+<span class="fc" id="L91">			return true;</span>
+		}
+<span class="fc" id="L93">		return false;</span>
+	}
+
+	private void expect(final int type) throws IOException {
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">		if (tokenizer.ttype != type) {</span>
+<span class="nc" id="L98">			throw new IOException(&quot;Invalid Syntax.&quot;);</span>
+		}
+<span class="fc" id="L100">		tokenizer.nextToken();</span>
+<span class="fc" id="L101">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
